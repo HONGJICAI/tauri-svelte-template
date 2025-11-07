@@ -111,7 +111,6 @@ tauri-svelte-template/
 ├── package.json         # Node dependencies and scripts
 ├── pnpm-workspace.yaml  # pnpm workspace configuration
 ├── biome.json           # Biome configuration
-├── postcss.config.js    # PostCSS configuration
 ├── svelte.config.js     # Svelte configuration
 ├── tsconfig.json        # TypeScript configuration
 └── vite.config.ts       # Vite configuration
@@ -131,7 +130,7 @@ The built application will be in `src-tauri/target/release/bundle/`.
 
 ### Tailwind CSS
 
-Customize Tailwind in `src/app.css`. Tailwind CSS 4 uses CSS variables and the new `@import "tailwindcss"` syntax.
+Tailwind CSS 4 is integrated via the Vite plugin. Customize styles in `src/app.css` using the `@import "tailwindcss"` syntax.
 
 ### Biome
 
