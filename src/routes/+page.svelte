@@ -9,8 +9,12 @@ async function greet() {
 }
 </script>
 
+<svelte:head>
+  <title>Tauri + SvelteKit</title>
+</svelte:head>
+
 <main class="container mx-auto p-8">
-  <h1 class="text-4xl font-bold mb-8 text-blue-600">Welcome to Tauri + Svelte 5!</h1>
+  <h1 class="text-4xl font-bold mb-8 text-blue-600">Welcome to Tauri + SvelteKit!</h1>
 
   <div class="max-w-md mx-auto space-y-4">
     <div class="flex gap-2">

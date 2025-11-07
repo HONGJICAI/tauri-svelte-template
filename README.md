@@ -1,7 +1,8 @@
-# Tauri v2 + Svelte 5 Template
+# Tauri v2 + SvelteKit Template
 
 A modern desktop application template built with:
 - **Tauri v2** - Build smaller, faster, and more secure desktop applications
+- **SvelteKit** - The fastest way to build Svelte apps with routing and SSG
 - **Svelte 5** - Cybernetically enhanced web apps with runes
 - **Vite** - Next generation frontend tooling
 - **TypeScript** - Type-safe development
@@ -14,12 +15,14 @@ A modern desktop application template built with:
 
 ✨ **Modern Stack**
 - Tauri v2 for native desktop capabilities
+- SvelteKit with static adapter for SPA mode
 - Svelte 5 with the latest runes API
-- Tailwind CSS 4 with native CSS variables support
+- Tailwind CSS 4 with Vite plugin integration
 - Full TypeScript support
 
 🛠️ **Developer Experience**
 - Fast builds with Vite
+- File-based routing with SvelteKit
 - Code formatting and linting with Biome
 - Pre-commit hooks with Husky
 - Staged file linting with lint-staged
@@ -92,28 +95,30 @@ sudo apt install libwebkit2gtk-4.1-dev \
 ```
 tauri-svelte-template/
 ├── .github/
-│   └── workflows/       # GitHub Actions workflows
-├── .husky/              # Husky git hooks
-├── src/                 # Svelte source files
-│   ├── App.svelte       # Main Svelte component
-│   ├── app.css          # Global styles with Tailwind
-│   ├── main.ts          # Application entry point
-│   └── vite-env.d.ts    # Vite type declarations
-├── src-tauri/           # Tauri (Rust) source files
+│   └── workflows/         # GitHub Actions workflows
+├── .husky/                # Husky git hooks
+├── src/                   # SvelteKit source files
+│   ├── routes/            # SvelteKit file-based routes
+│   │   ├── +layout.svelte # Root layout
+│   │   ├── +layout.ts     # Layout config (prerender, ssr)
+│   │   └── +page.svelte   # Home page
+│   ├── lib/               # Reusable components and utilities
+│   ├── app.html           # HTML template
+│   └── app.css            # Global styles with Tailwind
+├── src-tauri/             # Tauri (Rust) source files
 │   ├── src/
-│   │   ├── main.rs      # Tauri entry point
-│   │   └── lib.rs       # Library code
-│   ├── icons/           # Application icons
-│   ├── Cargo.toml       # Rust dependencies
-│   └── tauri.conf.json  # Tauri configuration
-├── public/              # Static assets
-├── index.html           # HTML entry point
-├── package.json         # Node dependencies and scripts
-├── pnpm-workspace.yaml  # pnpm workspace configuration
-├── biome.json           # Biome configuration
-├── svelte.config.js     # Svelte configuration
-├── tsconfig.json        # TypeScript configuration
-└── vite.config.ts       # Vite configuration
+│   │   ├── main.rs        # Tauri entry point
+│   │   └── lib.rs         # Library code
+│   ├── icons/             # Application icons
+│   ├── Cargo.toml         # Rust dependencies
+│   └── tauri.conf.json    # Tauri configuration
+├── static/                # Static assets
+├── package.json           # Node dependencies and scripts
+├── pnpm-workspace.yaml    # pnpm workspace configuration
+├── biome.json             # Biome configuration
+├── svelte.config.js       # SvelteKit configuration
+├── tsconfig.json          # TypeScript configuration
+└── vite.config.ts         # Vite configuration
 ```
 
 ## Building for Production
