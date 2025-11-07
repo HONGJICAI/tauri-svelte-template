@@ -2,7 +2,6 @@
 import { invoke } from "@tauri-apps/api/core";
 
 let greetMsg = $state("");
-// biome-ignore lint/style/useConst: Svelte 5 $state runes need let for two-way binding
 let name = $state("");
 
 async function greet() {
