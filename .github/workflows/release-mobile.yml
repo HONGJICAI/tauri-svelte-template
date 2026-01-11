@@ -69,8 +69,8 @@ jobs:
         env:
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11718014
 
-      - name: Build Android APK (release)
-        run: pnpm tauri android build
+      - name: Build Android APK and AAB (release)
+        run: pnpm tauri android build --aab
         env:
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11718014
 
