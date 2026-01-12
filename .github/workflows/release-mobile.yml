@@ -132,8 +132,14 @@ jobs:
       - name: Initialize iOS project
         run: pnpm tauri ios init
 
+      - name: Disable code signing in Xcode project
+        run: |
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' src-tauri/gen/apple/tauri-svelte-template.xcodeproj/project.pbxproj
+          sed -i '' 's/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = "";/g' src-tauri/gen/apple/tauri-svelte-template.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_IDENTITY = "[^"]*";/CODE_SIGN_IDENTITY = "";/g' src-tauri/gen/apple/tauri-svelte-template.xcodeproj/project.pbxproj
+
       - name: Build iOS app (release)
-        run: pnpm tauri ios build -- CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+        run: pnpm tauri ios build --target aarch64-apple-ios-sim
 
       - name: Upload iOS artifacts to release
         uses: softprops/action-gh-release@v2
