@@ -58,12 +58,26 @@ jobs:
 
       - name: Disable code signing in Xcode project
         run: |
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' src-tauri/gen/apple/tauri-svelte-template.xcodeproj/project.pbxproj
-          sed -i '' 's/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = "";/g' src-tauri/gen/apple/tauri-svelte-template.xcodeproj/project.pbxproj
-          sed -i '' 's/CODE_SIGN_IDENTITY = "[^"]*";/CODE_SIGN_IDENTITY = "";/g' src-tauri/gen/apple/tauri-svelte-template.xcodeproj/project.pbxproj
+          # Modify project.pbxproj to disable code signing for all targets
+          PBXPROJ="src-tauri/gen/apple/tauri-svelte-template.xcodeproj/project.pbxproj"
+          # Set CODE_SIGN_IDENTITY to empty
+          sed -i '' 's/CODE_SIGN_IDENTITY = ".*";/CODE_SIGN_IDENTITY = "";/g' "$PBXPROJ"
+          sed -i '' 's/CODE_SIGN_IDENTITY = .*;/CODE_SIGN_IDENTITY = "";/g' "$PBXPROJ"
+          # Set DEVELOPMENT_TEAM to empty
+          sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = "";/g' "$PBXPROJ"
+          # Set CODE_SIGN_STYLE to Manual
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' "$PBXPROJ"
+          # Replace CODE_SIGNING_REQUIRED and CODE_SIGNING_ALLOWED if they exist, or we'll add via xcodebuild args
+          sed -i '' 's/CODE_SIGNING_REQUIRED = YES;/CODE_SIGNING_REQUIRED = NO;/g' "$PBXPROJ"
+          sed -i '' 's/CODE_SIGNING_ALLOWED = YES;/CODE_SIGNING_ALLOWED = NO;/g' "$PBXPROJ"
 
       - name: Build iOS app (debug, simulator)
-        run: pnpm tauri ios build --debug --target aarch64-apple-ios-sim
+        run: |
+          pnpm tauri ios build --debug --target aarch64-apple-ios-sim -- \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM=""
 
       - name: Upload iOS build
         uses: actions/upload-artifact@v4
