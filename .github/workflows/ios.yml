@@ -79,7 +79,8 @@ jobs:
           # Install tauri-cli if not present
           cargo install tauri-cli --version "^2.0" --locked || true
           # Build for iOS simulator (no code signing required)
-          cargo tauri ios build --target aarch64-apple-ios-sim
+          # Note: Tauri CLI uses 'simulator' or 'device' for --target, not Rust target triples
+          cargo tauri ios build --debug
 
       - name: Upload iOS build
         uses: actions/upload-artifact@v4
