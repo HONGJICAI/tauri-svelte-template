@@ -148,12 +148,7 @@ jobs:
           sed -i '' 's/CODE_SIGNING_ALLOWED = YES;/CODE_SIGNING_ALLOWED = NO;/g' "$PBXPROJ"
 
       - name: Build iOS app (release)
-        run: |
-          pnpm tauri ios build -- \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            DEVELOPMENT_TEAM=""
+        run: pnpm tauri ios build
 
       - name: Upload iOS artifacts to release
         uses: softprops/action-gh-release@v2

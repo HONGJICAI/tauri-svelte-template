@@ -72,12 +72,7 @@ jobs:
           sed -i '' 's/CODE_SIGNING_ALLOWED = YES;/CODE_SIGNING_ALLOWED = NO;/g' "$PBXPROJ"
 
       - name: Build iOS app (debug, simulator)
-        run: |
-          pnpm tauri ios build --debug -- \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            DEVELOPMENT_TEAM=""
+        run: pnpm tauri ios build --debug
 
       - name: Upload iOS build
         uses: actions/upload-artifact@v4
