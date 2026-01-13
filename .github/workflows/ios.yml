@@ -74,24 +74,12 @@ jobs:
       - name: Build frontend
         run: pnpm build
 
-      - name: Build Rust library for iOS simulator
-        run: |
-          cd src-tauri
-          cargo build --target aarch64-apple-ios-sim --lib
-
       - name: Build iOS app (debug, simulator)
         run: |
-          # Build for simulator only (no code signing required)
-          cd src-tauri/gen/apple
-          xcodebuild -project tauri-svelte-template.xcodeproj \
-            -scheme tauri-svelte-template_iOS \
-            -sdk iphonesimulator \
-            -configuration Debug \
-            -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            build
+          # Install tauri-cli if not present
+          cargo install tauri-cli --version "^2.0" --locked || true
+          # Build for iOS simulator (no code signing required)
+          cargo tauri ios build --target aarch64-apple-ios-sim
 
       - name: Upload iOS build
         uses: actions/upload-artifact@v4
