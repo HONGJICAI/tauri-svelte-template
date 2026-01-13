@@ -149,7 +149,7 @@ jobs:
 
       - name: Build iOS app (release)
         run: |
-          pnpm tauri ios build --target aarch64-apple-ios-sim -- \
+          pnpm tauri ios build -- \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \

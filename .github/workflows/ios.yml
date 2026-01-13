@@ -73,7 +73,7 @@ jobs:
 
       - name: Build iOS app (debug, simulator)
         run: |
-          pnpm tauri ios build --debug --target aarch64-apple-ios-sim -- \
+          pnpm tauri ios build --debug -- \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
