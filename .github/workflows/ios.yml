@@ -71,8 +71,27 @@ jobs:
           sed -i '' 's/CODE_SIGNING_REQUIRED = YES;/CODE_SIGNING_REQUIRED = NO;/g' "$PBXPROJ"
           sed -i '' 's/CODE_SIGNING_ALLOWED = YES;/CODE_SIGNING_ALLOWED = NO;/g' "$PBXPROJ"
 
+      - name: Build frontend
+        run: pnpm build
+
+      - name: Build Rust library for iOS simulator
+        run: |
+          cd src-tauri
+          cargo build --target aarch64-apple-ios-sim --lib
+
       - name: Build iOS app (debug, simulator)
-        run: pnpm tauri ios build --debug
+        run: |
+          # Build for simulator only (no code signing required)
+          cd src-tauri/gen/apple
+          xcodebuild -project tauri-svelte-template.xcodeproj \
+            -scheme tauri-svelte-template_iOS \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
 
       - name: Upload iOS build
         uses: actions/upload-artifact@v4
