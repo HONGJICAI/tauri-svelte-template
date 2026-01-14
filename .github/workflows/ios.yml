@@ -78,9 +78,9 @@ jobs:
         run: |
           # Install tauri-cli if not present
           cargo install tauri-cli --version "^2.0" --locked || true
-          # Build for iOS simulator (no code signing required)
-          # Note: Tauri CLI uses 'simulator' or 'device' for --target, not Rust target triples
-          cargo tauri ios build --debug
+          # Build for iOS using --open flag to skip export/archive step (which requires code signing)
+          # The --open flag builds the app without exporting, suitable for CI
+          cargo tauri ios build --debug --open
 
       - name: Upload iOS build
         uses: actions/upload-artifact@v4
