@@ -1,0 +1,103 @@
+name: Mobile Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release-android:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Add Rust Android targets
+        run: |
+          rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android NDK
+        run: |
+          sdkmanager --install "ndk;27.0.11718014"
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Initialize Android project
+        run: pnpm tauri android init
+        env:
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11718014
+
+      - name: Build Android APK and AAB (release)
+        run: pnpm tauri android build --aab
+        env:
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11718014
+
+      - name: Upload Android artifacts to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+            src-tauri/gen/android/app/build/outputs/bundle/**/*.aab
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # NOTE: iOS release builds require code signing with a valid Apple Developer account.
+  # To enable iOS releases, you need to:
+  # 1. Set up an Apple Developer account
+  # 2. Add the following secrets to your repository:
+  #    - APPLE_CERTIFICATE: Base64-encoded .p12 certificate
+  #    - APPLE_CERTIFICATE_PASSWORD: Password for the certificate
+  #    - APPLE_PROVISIONING_PROFILE: Base64-encoded .mobileprovision file
+  #    - APPLE_TEAM_ID: Your Apple Developer Team ID
+  # 3. Uncomment the release-ios job below
+  #
+  # release-ios:
+  #   runs-on: macos-latest
+  #   permissions:
+  #     contents: write
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     ... (add signing setup steps)

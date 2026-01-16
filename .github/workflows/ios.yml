@@ -1,0 +1,120 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Add Rust iOS targets
+        run: |
+          rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Initialize iOS project
+        run: pnpm tauri ios init
+
+      - name: Disable code signing in Xcode project
+        run: |
+          # Modify project.pbxproj to disable code signing for all targets
+          PBXPROJ="src-tauri/gen/apple/tauri-svelte-template.xcodeproj/project.pbxproj"
+          # Set CODE_SIGN_IDENTITY to empty
+          sed -i '' 's/CODE_SIGN_IDENTITY = ".*";/CODE_SIGN_IDENTITY = "";/g' "$PBXPROJ"
+          sed -i '' 's/CODE_SIGN_IDENTITY = .*;/CODE_SIGN_IDENTITY = "";/g' "$PBXPROJ"
+          # Set DEVELOPMENT_TEAM to empty
+          sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = "";/g' "$PBXPROJ"
+          # Set CODE_SIGN_STYLE to Manual
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' "$PBXPROJ"
+          # Replace CODE_SIGNING_REQUIRED and CODE_SIGNING_ALLOWED if they exist, or we'll add via xcodebuild args
+          sed -i '' 's/CODE_SIGNING_REQUIRED = YES;/CODE_SIGNING_REQUIRED = NO;/g' "$PBXPROJ"
+          sed -i '' 's/CODE_SIGNING_ALLOWED = YES;/CODE_SIGNING_ALLOWED = NO;/g' "$PBXPROJ"
+
+      - name: Build frontend
+        run: pnpm build
+
+      - name: Build iOS app (debug, simulator)
+        env:
+          # Set CI mode to avoid any interactive prompts
+          CI: true
+        run: |
+          # Build the Rust library for iOS simulator target
+          cd src-tauri
+          cargo build --target aarch64-apple-ios-sim --lib
+          cd ..
+          
+          # Create the Externals directory and copy the built library
+          mkdir -p src-tauri/gen/apple/Externals/arm64/debug
+          
+          # The library is named libtauri_svelte_template_lib.a, but Xcode expects libapp.a
+          cp src-tauri/target/aarch64-apple-ios-sim/debug/libtauri_svelte_template_lib.a \
+             src-tauri/gen/apple/Externals/arm64/debug/libapp.a
+          
+          # Run xcodebuild directly for simulator build only (no export/archive)
+          # Skip the "Build Rust Code" phase since we've already built the library
+          cd src-tauri/gen/apple
+          
+          # Disable the Build Rust Code script phase by modifying the project
+          PBXPROJ="tauri-svelte-template.xcodeproj/project.pbxproj"
+          sed -i '' 's/shellScript = "pnpm tauri ios xcode-script/shellScript = "echo Skipping Rust build - already built/g' "$PBXPROJ"
+          
+          xcodebuild \
+            -project tauri-svelte-template.xcodeproj \
+            -scheme tauri-svelte-template_iOS \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            build
+
+      - name: Upload iOS build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-debug
+          path: |
+            src-tauri/gen/apple/build/**/*.app
+          if-no-files-found: warn

@@ -9,7 +9,7 @@ edition = "2021"
 
 [lib]
 name = "tauri_svelte_template_lib"
-crate-type = ["lib", "cdylib"]
+crate-type = ["staticlib", "cdylib", "lib"]
 
 [build-dependencies]
 tauri-build = { version = "2.0", features = [] }

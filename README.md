@@ -14,7 +14,7 @@ A modern desktop application template built with:
 ## Features
 
 ✨ **Modern Stack**
-- Tauri v2 for native desktop capabilities
+- Tauri v2 for native desktop and mobile capabilities
 - SvelteKit with static adapter for SPA mode
 - Svelte 5 with the latest runes API
 - Tailwind CSS 4 with Vite plugin integration
@@ -29,8 +29,9 @@ A modern desktop application template built with:
 
 🚀 **CI/CD Ready**
 - GitHub Actions workflows included
-- Multi-platform builds (Windows, macOS, Linux)
-- Automated releases
+- Multi-platform desktop builds (Windows, macOS, Linux)
+- Mobile builds (Android, iOS)
+- Automated releases for desktop and mobile
 
 ## Prerequisites
 
@@ -151,17 +152,38 @@ Configure the application in `src-tauri/tauri.conf.json`:
 
 ## CI/CD
 
-Two GitHub Actions workflows are included:
+Five GitHub Actions workflows are included:
+
+### Desktop
 
 1. **CI** (`.github/workflows/ci.yml`):
    - Runs on push and pull requests
    - Lints and formats code
    - Type checks
-   - Builds the application on all platforms
+   - Builds the application on all desktop platforms (Windows, macOS, Linux)
 
 2. **Release** (`.github/workflows/release.yml`):
    - Triggers on version tags (e.g., `v1.0.0`)
-   - Builds and publishes releases for all platforms
+   - Builds and publishes desktop releases for all platforms
+
+### Mobile
+
+3. **Android CI** (`.github/workflows/android.yml`):
+   - Runs on push, pull requests, and manual trigger
+   - Sets up Android SDK and NDK
+   - Builds Android APK (debug)
+   - Uploads build artifacts
+
+4. **iOS CI** (`.github/workflows/ios.yml`):
+   - Runs on push, pull requests, and manual trigger
+   - Builds iOS app for simulator (debug)
+   - Uploads build artifacts
+
+5. **Mobile Release** (`.github/workflows/release-mobile.yml`):
+   - Triggers on version tags (e.g., `v1.0.0`)
+   - Builds and publishes Android APK/AAB releases
+   - Builds and publishes iOS releases
+   - Note: iOS release builds require code signing configuration for distribution
 
 ## License
 
