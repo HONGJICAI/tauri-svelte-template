@@ -75,12 +75,34 @@ jobs:
         run: pnpm build
 
       - name: Build iOS app (debug, simulator)
+        env:
+          # Set CI mode to avoid any interactive prompts
+          CI: true
         run: |
-          # Install tauri-cli if not present
-          cargo install tauri-cli --version "^2.0" --locked || true
-          # Build for iOS using --open flag to skip export/archive step (which requires code signing)
-          # The --open flag builds the app without exporting, suitable for CI
-          cargo tauri ios build --debug --open
+          # Build the Rust library for iOS simulator target
+          cd src-tauri
+          cargo build --target aarch64-apple-ios-sim --lib --release
+          cd ..
+          
+          # Run xcodebuild directly for simulator build only (no export/archive)
+          # Skip the "Build Rust Code" phase since we've already built the library
+          cd src-tauri/gen/apple
+          
+          # Disable the Build Rust Code script phase by modifying the project
+          PBXPROJ="tauri-svelte-template.xcodeproj/project.pbxproj"
+          sed -i '' 's/shellScript = "pnpm tauri ios xcode-script/shellScript = "echo Skipping Rust build - already built/g' "$PBXPROJ"
+          
+          xcodebuild \
+            -project tauri-svelte-template.xcodeproj \
+            -scheme tauri-svelte-template_iOS \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            build
 
       - name: Upload iOS build
         uses: actions/upload-artifact@v4
