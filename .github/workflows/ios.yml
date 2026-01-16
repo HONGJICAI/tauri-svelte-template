@@ -81,8 +81,15 @@ jobs:
         run: |
           # Build the Rust library for iOS simulator target
           cd src-tauri
-          cargo build --target aarch64-apple-ios-sim --lib --release
+          cargo build --target aarch64-apple-ios-sim --lib
           cd ..
+          
+          # Create the Externals directory and copy the built library
+          mkdir -p src-tauri/gen/apple/Externals/arm64/debug
+          
+          # The library is named libtauri_svelte_template_lib.a, but Xcode expects libapp.a
+          cp src-tauri/target/aarch64-apple-ios-sim/debug/libtauri_svelte_template_lib.a \
+             src-tauri/gen/apple/Externals/arm64/debug/libapp.a
           
           # Run xcodebuild directly for simulator build only (no export/archive)
           # Skip the "Build Rust Code" phase since we've already built the library
